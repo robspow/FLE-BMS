@@ -463,6 +463,8 @@ class SerialMonitor:
         
 
     def populate_cells(self, line: list):
+        self.cells_update['Timestamp'] = datetime.now().strftime("%m-%d-%y-%H:%M:%S")
+
         if (("cell" in line) and ("volt" in line) and (not "dev" in line) and (not "pack" in line)):
             self.cells_update['volt' + line[1]] = line[3]
         elif (('mean' in line) and ('cell' in line) and ('voltage' in line)):
@@ -619,7 +621,7 @@ class SerialMonitor:
     def export_csv(self):
         data = ' '.join(self.parse_data)
         filename = f"serial_log_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv"
-        with open(filename, "w", newline="") as file:
+        with open(f"CSV Exports/{filename}", "w", newline="") as file:
             writer = csv.writer(file)
             writer.writerows([line.split() for line in data.splitlines()])
         self.log_text.insert(tk.END, f"Log exported as CSV: {filename}\n")
