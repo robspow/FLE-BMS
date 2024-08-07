@@ -16,7 +16,7 @@ class SerialMonitor:
         self.master = master
         self.window = ttk.Style(theme='darkly')
         self.master.title("FLE Serial Monitor")
-        self.master.geometry("1400x600")
+        self.master.geometry("1920x1080")
         ######################FRAMES
         #Voltage Frame
         self.cell_frame = tk.LabelFrame(self.master, text="Voltage (V)", bd=3, padx=10, pady=10, relief=tk.RAISED)
