@@ -8,34 +8,41 @@ import csv
 import threading
 from datetime import datetime
 import time
+import ttkbootstrap as ttk
 
 
 class SerialMonitor:
     def __init__(self, master):
         self.master = master
+        self.window = ttk.Style(theme='darkly')
         self.master.title("FLE Serial Monitor")
         self.master.geometry("1400x600")
-        self.master.configure(background='white')
-
         ######################FRAMES
         #Voltage Frame
-        self.cell_frame = tk.LabelFrame(self.master, text="Voltage (V)", bg='lightblue', bd=3, padx=10, pady=10, relief=tk.RAISED)
-        self.cell_frame.grid(row=2, column=0)
+        self.cell_frame = tk.LabelFrame(self.master, text="Voltage (V)", bd=3, padx=10, pady=10, relief=tk.RAISED)
+        self.cell_frame.grid(row=9, column=0)
         #Temp Frame
-        self.temp_frame = tk.LabelFrame(self.master, text="Temperature (C)", bg='lightblue', bd=3, padx=10, pady=10, relief=tk.RAISED)
-        self.temp_frame.grid(row=2, column=1)
+        self.temp_frame = tk.LabelFrame(self.master, text="Temperature (C)", bd=3, padx=10, pady=10, relief=tk.RAISED)
+        self.temp_frame.grid(row=9, column=1)
         #Cell SOC Frame
-        self.soc_frame = tk.LabelFrame(self.master, text="State of Charge(SOC) (%)", bg='lightblue', bd=3, padx=10, pady=10, relief=tk.RAISED)
-        self.soc_frame.grid(row=2, column=2)
+        self.soc_frame = tk.LabelFrame(self.master, text="State of Charge(SOC) (%)", bd=3, padx=10, pady=10, relief=tk.RAISED)
+        self.soc_frame.grid(row=9, column=2)
         #Pack Frame
-        self.pack_frame = tk.LabelFrame(self.master, bg="lightblue", bd=3, padx=10, pady=10, relief=tk.RAISED)
-        self.pack_frame.grid(row=2, column=3, padx=20)
+        self.pack_frame = tk.LabelFrame(self.master, bd=3, padx=10, pady=10, relief=tk.RAISED)
+        self.pack_frame.grid(row=9, column=3, padx=20)
         #Log Frame
-        self.log_frame = tk.LabelFrame(self.master, bg="lightblue", bd=3, padx=10, pady=10, relief=tk.RAISED)
-        self.log_frame.grid(row=3, column=6, padx=20)
+        self.log_frame = tk.LabelFrame(self.master, bd=3, padx=10, pady=10, relief=tk.RAISED)
+        self.log_frame.grid(row=10, column=7, padx=20)
         #Error Frame
-        self.error_frame =tk.LabelFrame(self.master, bg="lightblue", bd=3, padx=10, pady=10, relief=tk.RAISED)
-        self.error_frame.grid(row=3, column=5, padx=20)
+        self.error_frame =tk.LabelFrame(self.master, bd=3, padx=10, pady=10, relief=tk.RAISED)
+        self.error_frame.grid(row=10, column=6, padx=20)
+
+        #Header Frame
+        self.header_frame = tk.LabelFrame(self.master, bd=3, padx=10, pady=10)
+        self.header_frame.place(x = 0, rely = 0, relheight = 0.1, relwidth = 1)
+        self.header_frame.columnconfigure(0, weight=1)
+        self.header_frame.rowconfigure(0, weight=1)
+        self.header_frame.pack_propagate(False)
         #########################
 
         #Intializes all widgets
@@ -62,21 +69,20 @@ class SerialMonitor:
         ############# ALL LABELS AND SCROLLABLE TEXT ###################
         #Port Label
         self.port_combobox_label = ttk.Label(self.master, text="Select Port:")
-        self.port_combobox_label.grid(row=0, column=0, padx=10, pady=10)
+        self.port_combobox_label.grid(row=6, column=0)
         #This function inserts all ports into port combobox
         self.populate_ports()
 
         #Baud Label
         self.baud_combobox_label = ttk.Label(self.master, text="Select Baud Rate:")
-        self.baud_combobox_label.grid(row=0, column=3, padx=10, pady=10)
-
+        self.baud_combobox_label.grid(row=6, column=2)
         #Cell data label
-        self.cell_data_label =ttk.Label(self.master, text="Cell Data", font=("Arial",16,'bold'), relief='ridge', anchor='center', background='lightblue')
-        self.cell_data_label.grid(row=1, column=0, padx=10, pady=10, columnspan=3, sticky='nsew')
+        self.cell_data_label =ttk.Label(self.master, text="Cell Data", font=("Arial",16,'bold'), relief='ridge', anchor='center')
+        self.cell_data_label.grid(row=8, column=0, padx=10, pady=10, columnspan=3, sticky='nsew')
 
         #Pack data label
-        self.cell_data_label =ttk.Label(self.master, text="Pack Data", font=("Arial",16,'bold'), relief='ridge', anchor='center', background='lightblue' )
-        self.cell_data_label.grid(row=1, column=3, padx=10, pady=10, columnspan=2, sticky='nsew')
+        self.cell_data_label =ttk.Label(self.master, text="Pack Data", font=("Arial",16,'bold'), relief='ridge', anchor='center')
+        self.cell_data_label.grid(row=8, column=3, padx=10, pady=10, columnspan=2, sticky='nsew')
 
         ################## CELL LABELS AND TEXTFIELDS ########################
 
@@ -336,15 +342,15 @@ class SerialMonitor:
         #Baud combobox
         self.baud_combobox = ttk.Combobox(self.master, values=["2400","4800","9600","14400", "115200"], state="readonly")
         self.baud_combobox.set("115200")
-        self.baud_combobox.grid(row=0, column=4, padx=10, pady=10)
+        self.baud_combobox.grid(row=6, column=3)
 
         #Connect button
         self.connect_button = ttk.Button(self.master, text="Connect", command=self.connect)
-        self.connect_button.grid(row=0, column=5, padx=10, pady=10)
+        self.connect_button.grid(row=6, column=4)
 
         #Disconnect button
         self.disconnect_button = ttk.Button(self.master, text="Disconnect", command=self.disconnect, state=tk.DISABLED)
-        self.disconnect_button.grid(row=0, column=6, padx=10, pady=10)
+        self.disconnect_button.grid(row=6, column=5)
 
         #Set Log Time Button
         self.interval_label = tk.Label(self.log_frame, text="Logging Interval (s)")
@@ -357,31 +363,43 @@ class SerialMonitor:
 
         #All export buttons
         self.export_txt_button = ttk.Button(self.master, text="Export as TXT", command=self.export_txt, state=tk.DISABLED)
-        self.export_txt_button.grid(row=0, column=7, padx=10, pady=10)
+        self.export_txt_button.grid(row=6, column=7, pady=10)
 
         self.export_csv_button = ttk.Button(self.master, text="Export as CSV", command=self.export_csv, state=tk.DISABLED)
-        self.export_csv_button.grid(row=0, column=8, padx=10, pady=10)
+        self.export_csv_button.grid(row=6, column=8, pady=10)
 
         self.export_xml_button = ttk.Button(self.master, text="Export as XML", command=self.export_xml, state=tk.DISABLED)
-        self.export_xml_button.grid(row=0, column=9, padx=10, pady=10)
+        self.export_xml_button.grid(row=6, column=9, pady=10)
         #################################
 
         #Output BMS readouts into textfield
         self.log_text = scrolledtext.ScrolledText(self.master, wrap=tk.WORD, width=80, height=20)
-        self.log_text.grid(row=2, column=5, columnspan=8, padx=10, pady=10)
+        self.log_text.grid(row=9, column=5, columnspan=3, padx=10, pady=10)
 
         #Error log Readout textfield and label
         self.errorLog_label = tk.Label(self.error_frame, height=1, width=10, text='Error Codes', font=('bold'))
         self.errorLog_label.pack()
-        self.errorLog = scrolledtext.ScrolledText(self.error_frame, wrap=tk.WORD, width=20, height=5)
+        self.errorLog = scrolledtext.ScrolledText(self.error_frame, wrap=tk.WORD, width=20, height=5, state="disabled")
         self.errorLog.pack()
+
+        #Theme Combobox
+        self.theme_label = tk.Label(self.header_frame, text='Theme:', font=('Arial', 8, 'bold'))
+        self.theme_label.pack(anchor='ne')
+        self.theme_combobox = ttk.Combobox(self.header_frame, values=[value for value in self.window.theme_names()], state="readonly")
+        self.theme_combobox.pack(anchor="ne", after=self.theme_label, padx=0)
+        self.theme_combobox.bind('<<ComboboxSelected>>', self.theme_set)
+
+
         ################################# END OF WIDGETS ##################################
 
+    def theme_set(self, event):
+        self.window.theme_use(self.theme_combobox.get())
+            
     def populate_ports(self):
         ports = [port.device for port in serial.tools.list_ports.comports()]
         self.port_combobox = ttk.Combobox(self.master, values=ports, state="readonly")
         self.port_combobox.set('COM3')
-        self.port_combobox.grid(row=0, column=1, padx=10, pady=10)
+        self.port_combobox.grid(row=6, column=1)
 
     def connect(self):
         port = self.port_combobox.get()
@@ -430,6 +448,7 @@ class SerialMonitor:
                 except Exception as e:
                     if self.connection_active:  # Only log errors if the connection is still active
                         self.log_text.insert(tk.END, f"Error reading from port: {str(e)}\n")
+                        continue
                     break
 
     def set_deltaT(self):
@@ -444,8 +463,6 @@ class SerialMonitor:
         
 
     def populate_cells(self, line: list):
-        
-
         if (("cell" in line) and ("volt" in line) and (not "dev" in line) and (not "pack" in line)):
             self.cells_update['volt' + line[1]] = line[3]
         elif (('mean' in line) and ('cell' in line) and ('voltage' in line)):
@@ -623,5 +640,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = SerialMonitor(root)
     root.mainloop()
-
-    
