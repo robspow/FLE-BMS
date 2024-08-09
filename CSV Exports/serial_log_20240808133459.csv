@@ -1,0 +1,3 @@
+Timestamp,adc0,adc1,adc2,adc3,adc4,adc5,adc6,adc7,temperature_gradient,mean_temp,term_volt,drain_volt,volt0,volt1,volt2,volt3,volt4,volt5,volt6,volt7,mean_cell_voltage,pack_volt,current,soc0,soc1,soc2,soc3,soc4,soc5,soc6,soc7,total_soc,time_remaining,capacity,Charging_Mode,max_current,Vbus,Vsafe
+08-08-24-13:34:54,-98,-98,-98,-97,-96,-98,-98,-97,1,-97,25242,25287,33171,33162,33170,33188,33191,33191,32982,33232,3316,26528,-312,812,806,810,818,819,820,740,0,704,95917,88560,CC,0,0,0
+08-08-24-13:34:59,-97,-97,-97,-97,-98,-96,-98,-97,1,-97,25237,25282,33169,33161,33169,33187,33188,33189,32980,33230,3315,26527,-150,812,811,814,821,823,824,756,0,707,69568,88560,CC,0,0,0
