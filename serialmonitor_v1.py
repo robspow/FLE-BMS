@@ -26,6 +26,7 @@ class SerialMonitor:
         self.window = ttk.Style(theme='united')
         self.master.title("FLE Serial Monitor")
         self.master.geometry("1920x1080")
+        self.master.geometry("1920x1080")
         ######################FRAMES
         #Voltage Frame
         self.cell_frame = tk.LabelFrame(self.master, text="Voltage (V)", bd=3, padx=10, pady=10, relief=tk.RIDGE)
@@ -408,6 +409,10 @@ class SerialMonitor:
     def theme_set(self, event):
         self.window.theme_use(self.theme_combobox.get())
             
+
+    def theme_set(self, event):
+        self.window.theme_use(self.theme_combobox.get())
+            
     def populate_ports(self):
         ports = [port.device for port in serial.tools.list_ports.comports()]
         self.port_combobox = ttk.Combobox(self.master, values=ports, state="readonly")
@@ -462,6 +467,7 @@ class SerialMonitor:
                     if self.connection_active:  # Only log errors if the connection is still active
                         self.log_text.insert(tk.END, f"Error reading from port: {str(e)}\n")
                         continue
+                        continue
                     break
 
     def set_deltaT(self):
@@ -476,6 +482,7 @@ class SerialMonitor:
         
 
     def populate_cells(self, line: list):
+        self.cells_update['Timestamp'] = datetime.now().strftime("%m-%d-%y-%H:%M:%S")
         self.cells_update['Timestamp'] = datetime.now().strftime("%m-%d-%y-%H:%M:%S")
 
         if (("cell" in line) and ("volt" in line) and (not "dev" in line) and (not "pack" in line)):
@@ -652,6 +659,7 @@ class SerialMonitor:
     def export_csv(self):
         data = ' '.join(self.parse_data)
         filename = f"serial_log_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv"
+        with open(f"CSV Exports/{filename}", "w", newline="") as file:
         with open(f"CSV Exports/{filename}", "w", newline="") as file:
             writer = csv.writer(file)
             writer.writerows([line.split() for line in data.splitlines()])
