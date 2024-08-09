@@ -13,9 +13,8 @@ import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
-import matplotlib.animation as animation
+import matplotlib.animation as animations
 from matplotlib import style
-
 style.use("ggplot")
 f = Figure(figsize=(5,5), dpi=100)
 a = f.add_subplot(111)
@@ -659,7 +658,6 @@ class SerialMonitor:
     def export_csv(self):
         data = ' '.join(self.parse_data)
         filename = f"serial_log_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv"
-        with open(f"CSV Exports/{filename}", "w", newline="") as file:
         with open(f"CSV Exports/{filename}", "w", newline="") as file:
             writer = csv.writer(file)
             writer.writerows([line.split() for line in data.splitlines()])
