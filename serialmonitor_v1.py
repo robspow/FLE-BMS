@@ -8,37 +8,59 @@ import csv
 import threading
 from datetime import datetime
 import time
+import ttkbootstrap as ttk
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.figure import Figure
+import matplotlib.animation as animation
+from matplotlib import style
 
+style.use("ggplot")
+f = Figure(figsize=(5,5), dpi=100)
+a = f.add_subplot(111)
 
 class SerialMonitor:
     def __init__(self, master):
         self.master = master
+        self.window = ttk.Style(theme='united')
         self.master.title("FLE Serial Monitor")
-        self.master.geometry("1400x600")
-        self.master.configure(background='white')
-
+        self.master.geometry("1920x1080")
         ######################FRAMES
         #Voltage Frame
-        self.cell_frame = tk.LabelFrame(self.master, text="Voltage (V)", bg='lightblue', bd=3, padx=10, pady=10, relief=tk.RAISED)
-        self.cell_frame.grid(row=2, column=0)
+        self.cell_frame = tk.LabelFrame(self.master, text="Voltage (V)", bd=3, padx=10, pady=10, relief=tk.RIDGE)
+        self.cell_frame.grid(row=8, column=0, sticky='nsew')
         #Temp Frame
-        self.temp_frame = tk.LabelFrame(self.master, text="Temperature (C)", bg='lightblue', bd=3, padx=10, pady=10, relief=tk.RAISED)
-        self.temp_frame.grid(row=2, column=1)
+        self.temp_frame = tk.LabelFrame(self.master, text="Temperature (C)", bd=3, padx=10, pady=10, relief=tk.RIDGE)
+        self.temp_frame.grid(row=8, column=1, sticky='nsew')
         #Cell SOC Frame
-        self.soc_frame = tk.LabelFrame(self.master, text="State of Charge(SOC) (%)", bg='lightblue', bd=3, padx=10, pady=10, relief=tk.RAISED)
-        self.soc_frame.grid(row=2, column=2)
+        self.soc_frame = tk.LabelFrame(self.master, text="State of Charge(SOC) (%)", bd=3, padx=10, pady=10, relief=tk.RIDGE)
+        self.soc_frame.grid(row=8, column=2, sticky='nsew')
         #Pack Frame
-        self.pack_frame = tk.LabelFrame(self.master, bg="lightblue", bd=3, padx=10, pady=10, relief=tk.RAISED)
-        self.pack_frame.grid(row=2, column=3, padx=20)
+        self.pack_frame = tk.LabelFrame(self.master, bd=3, padx=10, pady=10, relief=tk.RIDGE)
+        self.pack_frame.grid(row=8, column=3, padx=20, columnspan=2, sticky='nsew', pady=10)
         #Log Frame
-        self.log_frame = tk.LabelFrame(self.master, bg="lightblue", bd=3, padx=10, pady=10, relief=tk.RAISED)
-        self.log_frame.grid(row=3, column=6, padx=20)
+        self.log_frame = tk.LabelFrame(self.master, bd=3, padx=10, pady=10, relief=tk.RIDGE)
+        self.log_frame.grid(row=9, column=6, sticky='ew')
         #Error Frame
-        self.error_frame =tk.LabelFrame(self.master, bg="lightblue", bd=3, padx=10, pady=10, relief=tk.RAISED)
-        self.error_frame.grid(row=3, column=5, padx=20)
+        self.error_frame =tk.LabelFrame(self.master, bd=3, padx=10, pady=10, relief=tk.RIDGE)
+        self.error_frame.grid(row=9, column=7, padx=11)
+
+        #Header Frame
+        self.header_frame = tk.LabelFrame(self.master, padx=10, pady=10)
+        self.header_frame.place(x = 0, rely = 0, relheight = 0.1, relwidth = 1)
         #########################
 
-        #Intializes all widgets
+        #Making equal size columns and adding weight and uniformity to them
+        columns = []
+        for i in range(7):
+            frame = tk.Frame(self.master)
+            columns.append(frame)
+
+        self.master.grid_rowconfigure(0, weight=1)
+        for column, f in enumerate(columns):
+            f.grid(row=0, column=column, sticky="nsew")
+            self.master.grid_columnconfigure(column, weight=1, uniform="column")
         self.create_widgets()
             
         # Flag to indicate if the serial connection is active
@@ -61,22 +83,20 @@ class SerialMonitor:
     def create_widgets(self):
         ############# ALL LABELS AND SCROLLABLE TEXT ###################
         #Port Label
-        self.port_combobox_label = ttk.Label(self.master, text="Select Port:")
-        self.port_combobox_label.grid(row=0, column=0, padx=10, pady=10)
+        ##self.port_combobox_label.grid(row=6, column=0, sticky='n', ipady=5)
         #This function inserts all ports into port combobox
         self.populate_ports()
 
         #Baud Label
-        self.baud_combobox_label = ttk.Label(self.master, text="Select Baud Rate:")
-        self.baud_combobox_label.grid(row=0, column=3, padx=10, pady=10)
-
+        #self.baud_combobox_label = ttk.Label(self.master, text="Select Baud Rate:", font='Arial')
+        #self.baud_combobox_label.grid(row=6, column=1, sticky='n', ipady=5)
         #Cell data label
-        self.cell_data_label =ttk.Label(self.master, text="Cell Data", font=("Arial",16,'bold'), relief='ridge', anchor='center', background='lightblue')
-        self.cell_data_label.grid(row=1, column=0, padx=10, pady=10, columnspan=3, sticky='nsew')
+        self.cell_data_label =ttk.Label(self.master, text="Cell Data", font=("Arial",16,'bold'), relief='solid', anchor='center')
+        self.cell_data_label.grid(row=7, column=0, ipadx=5, ipady=0, columnspan=3, sticky='nsew')
 
         #Pack data label
-        self.cell_data_label =ttk.Label(self.master, text="Pack Data", font=("Arial",16,'bold'), relief='ridge', anchor='center', background='lightblue' )
-        self.cell_data_label.grid(row=1, column=3, padx=10, pady=10, columnspan=2, sticky='nsew')
+        self.cell_data_label =ttk.Label(self.master, text="Pack Data", font=("Arial",16,'bold'), relief='solid', anchor='center')
+        self.cell_data_label.grid(row=7, column=3, ipadx=5, pady=0, columnspan=2, sticky='nsew')
 
         ################## CELL LABELS AND TEXTFIELDS ########################
 
@@ -336,15 +356,15 @@ class SerialMonitor:
         #Baud combobox
         self.baud_combobox = ttk.Combobox(self.master, values=["2400","4800","9600","14400", "115200"], state="readonly")
         self.baud_combobox.set("115200")
-        self.baud_combobox.grid(row=0, column=4, padx=10, pady=10)
+        self.baud_combobox.grid(row=6, column=1, sticky='nsew')
 
         #Connect button
         self.connect_button = ttk.Button(self.master, text="Connect", command=self.connect)
-        self.connect_button.grid(row=0, column=5, padx=10, pady=10)
+        self.connect_button.grid(row=6, column=2, sticky='nsew')
 
         #Disconnect button
         self.disconnect_button = ttk.Button(self.master, text="Disconnect", command=self.disconnect, state=tk.DISABLED)
-        self.disconnect_button.grid(row=0, column=6, padx=10, pady=10)
+        self.disconnect_button.grid(row=6, column=3, sticky='nsew')
 
         #Set Log Time Button
         self.interval_label = tk.Label(self.log_frame, text="Logging Interval (s)")
@@ -357,31 +377,42 @@ class SerialMonitor:
 
         #All export buttons
         self.export_txt_button = ttk.Button(self.master, text="Export as TXT", command=self.export_txt, state=tk.DISABLED)
-        self.export_txt_button.grid(row=0, column=7, padx=10, pady=10)
+        self.export_txt_button.grid(row=6, column=4, sticky='nsew', ipady=10)
 
         self.export_csv_button = ttk.Button(self.master, text="Export as CSV", command=self.export_csv, state=tk.DISABLED)
-        self.export_csv_button.grid(row=0, column=8, padx=10, pady=10)
+        self.export_csv_button.grid(row=6, column=5, sticky='nsew', )
 
         self.export_xml_button = ttk.Button(self.master, text="Export as XML", command=self.export_xml, state=tk.DISABLED)
-        self.export_xml_button.grid(row=0, column=9, padx=10, pady=10)
+        self.export_xml_button.grid(row=6, column=6, sticky='nsew')
         #################################
 
         #Output BMS readouts into textfield
         self.log_text = scrolledtext.ScrolledText(self.master, wrap=tk.WORD, width=80, height=20)
-        self.log_text.grid(row=2, column=5, columnspan=8, padx=10, pady=10)
+        self.log_text.grid(row=8, column=5, columnspan=3, sticky='nsew', pady=12)
 
         #Error log Readout textfield and label
         self.errorLog_label = tk.Label(self.error_frame, height=1, width=10, text='Error Codes', font=('bold'))
         self.errorLog_label.pack()
-        self.errorLog = scrolledtext.ScrolledText(self.error_frame, wrap=tk.WORD, width=20, height=5)
+        self.errorLog = scrolledtext.ScrolledText(self.error_frame, wrap=tk.WORD, width=15, height=5)
         self.errorLog.pack()
+
+        #Theme Combobox
+        self.theme_label = tk.Label(self.header_frame, text='Theme:', font=('Arial', 8, 'bold'))
+        self.theme_label.pack(anchor='ne', padx=5, ipadx=5)
+        self.theme_combobox = ttk.Combobox(self.header_frame, values=[value for value in self.window.theme_names()], state="readonly")
+        self.theme_combobox.pack(anchor="ne", after=self.theme_label, ipady=20, ipadx=3)
+        self.theme_combobox.bind('<<ComboboxSelected>>', self.theme_set)
+
         ################################# END OF WIDGETS ##################################
 
+    def theme_set(self, event):
+        self.window.theme_use(self.theme_combobox.get())
+            
     def populate_ports(self):
         ports = [port.device for port in serial.tools.list_ports.comports()]
         self.port_combobox = ttk.Combobox(self.master, values=ports, state="readonly")
         self.port_combobox.set('COM3')
-        self.port_combobox.grid(row=0, column=1, padx=10, pady=10)
+        self.port_combobox.grid(row=6, column=0, sticky='nsew')
 
     def connect(self):
         port = self.port_combobox.get()
@@ -425,11 +456,12 @@ class SerialMonitor:
                     lineCopy = lineCopy.split(' ')
                     if line:
                         self.populate_cells(lineCopy) #Passes each line into a function to check if the line contains desired information
-                        self.log_text.insert(tk.END, line)
+                        self.log_text.insert(tk.END, str(datetime.now()) + ': ' + line)
                         self.log_text.see(tk.END)
                 except Exception as e:
                     if self.connection_active:  # Only log errors if the connection is still active
                         self.log_text.insert(tk.END, f"Error reading from port: {str(e)}\n")
+                        continue
                     break
 
     def set_deltaT(self):
@@ -444,7 +476,7 @@ class SerialMonitor:
         
 
     def populate_cells(self, line: list):
-        
+        self.cells_update['Timestamp'] = datetime.now().strftime("%m-%d-%y-%H:%M:%S")
 
         if (("cell" in line) and ("volt" in line) and (not "dev" in line) and (not "pack" in line)):
             self.cells_update['volt' + line[1]] = line[3]
@@ -475,13 +507,13 @@ class SerialMonitor:
         elif ("adc" in line):
             self.cells_update[line[0] + line[1]] = line[3]
         elif ('DTC' in line):
-            self.error_codes.add(line[1])
+            self.cells_update['Error_Codes'] = line[1]
         #Updating global cells dictionary with freshly grabbed information
         if not (self.cells == self.cells_update):
             self.cells.update(self.cells_update)
             self.update_data()
         #If self.cells has all of the data needed, start writing to log
-        if len(self.cells) >= 39:
+        if len(self.cells) >= 40:
             self.write_to_parsed_log()
 
     def update_data(self):
@@ -575,11 +607,11 @@ class SerialMonitor:
                 self.chargeMode_textField.configure(text=str(self.cells["Charging_Mode"]))
 
         #Error Code Live Update
-        if self.error_codes:
-           self.errorLog.delete('1.0', tk.END)
-           self.errorLog.insert(tk.END, self.error_codes)
-           self.errorLog.see(tk.END)
-           
+            if 'Error_Codes' in self.cells:
+                self.errorLog.delete('1.0', tk.END)
+                self.errorLog.insert(tk.END, self.cells['Error_Codes'])
+                self.errorLog.see(tk.END)
+
     #Writes parsed data into a log file
     def write_to_parsed_log(self):
         if self.firstLog_Flag == True:
@@ -592,6 +624,24 @@ class SerialMonitor:
             self.parse_data.append("\n")
             self.t_ref = time.time()
 
+    def plot(self):
+        navFrame = tk.LabelFrame(self.master, bd=3, padx=10, pady=10)
+        fig = Figure(figsize = (8, 3), dpi = 100)
+        plot1 = fig.add_subplot(111)
+        canvas = FigureCanvasTkAgg(fig, master = self.master)
+        canvas.draw()
+        canvas.get_tk_widget().grid(row=9,column=1, columnspan=4, pady=10, sticky='ns', padx=20)
+        toolbar = NavigationToolbar2Tk(canvas, navFrame)
+        toolbar.update()
+        navFrame.grid(row=9,column=0, sticky='nsew', pady=10)
+    
+
+    def animate_plot(self, i):
+        xList = [value for value in self.csv_header if isinstance(value, datetime.date)]
+        yList = [int(value) for value in self.cells.values() if 'cell' in value]
+        a.clear()
+        a.plot(xList, yList)
+
     def export_txt(self):
         data = self.log_text.get(1.0, tk.END)
         filename = f"serial_log_{datetime.now().strftime('%Y%m%d%H%M%S')}.txt"
@@ -602,7 +652,7 @@ class SerialMonitor:
     def export_csv(self):
         data = ' '.join(self.parse_data)
         filename = f"serial_log_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv"
-        with open(filename, "w", newline="") as file:
+        with open(f"CSV Exports/{filename}", "w", newline="") as file:
             writer = csv.writer(file)
             writer.writerows([line.split() for line in data.splitlines()])
         self.log_text.insert(tk.END, f"Log exported as CSV: {filename}\n")
@@ -622,6 +672,5 @@ class SerialMonitor:
 if __name__ == "__main__":
     root = tk.Tk()
     app = SerialMonitor(root)
+    app.plot()
     root.mainloop()
-
-    
