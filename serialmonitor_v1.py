@@ -40,6 +40,8 @@ class SerialMonitor:
         self.cTableContainer.pack(fill=tk.BOTH, side=tk.LEFT, expand=tk.TRUE)
         self.cTableContainer.create_window(0, 0, window=self.fTable, anchor=tk.NW)
 
+        self.cTableContainer.bind_all("<MouseWheel>", self._on_mousewheel)
+
         ######################FRAMES
         #Voltage Frame
         self.cell_frame = tk.LabelFrame(self.fTable, text="Voltage (V)", bd=3, padx=10, pady=10, relief=tk.RIDGE)
@@ -414,6 +416,9 @@ class SerialMonitor:
     def updateScrollRegion(self):
         self.cTableContainer.update_idletasks()
         self.cTableContainer.config(scrollregion=self.fTable.bbox())
+    
+    def _on_mousewheel(self, event):
+        self.cTableContainer.yview_scroll(int(-1*(event.delta/120)), "units")
 
     def theme_set(self, event):
         self.window.theme_use(self.theme_combobox.get())
