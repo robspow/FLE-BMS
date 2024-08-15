@@ -13,57 +13,68 @@ import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
-import matplotlib.animation as animations
+import matplotlib.animation as animation
 from matplotlib import style
+
 style.use("ggplot")
-f = Figure(figsize=(5,5), dpi=100)
-a = f.add_subplot(111)
+fig = Figure(figsize=(8,3), dpi=100)
 
 class SerialMonitor:
     def __init__(self, master):
         self.master = master
         self.window = ttk.Style(theme='united')
         self.master.title("FLE Serial Monitor")
-        self.master.geometry("1920x1080")
-        self.master.geometry("1920x1080")
+        self.master.geometry("1400x600")
+
+        self.cTableContainer = tk.Canvas(self.master)
+        self.fTable = tk.Frame(self.cTableContainer)
+        sbHorizontalScrollBar = tk.Scrollbar(self.master)
+        sbVerticalScrollBar = tk.Scrollbar(self.master)
+        self.cTableContainer.config(xscrollcommand=sbHorizontalScrollBar.set,
+        yscrollcommand=sbVerticalScrollBar.set, highlightthickness=0)
+        sbHorizontalScrollBar.config(orient=tk.HORIZONTAL, command=self.cTableContainer.xview)
+        sbVerticalScrollBar.config(orient=tk.VERTICAL, command=self.cTableContainer.yview)
+
+        sbHorizontalScrollBar.pack(fill=tk.X, side=tk.BOTTOM, expand=tk.FALSE)
+        sbVerticalScrollBar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
+        self.cTableContainer.pack(fill=tk.BOTH, side=tk.LEFT, expand=tk.TRUE)
+        self.cTableContainer.create_window(0, 0, window=self.fTable, anchor=tk.NW)
+
         ######################FRAMES
         #Voltage Frame
-        self.cell_frame = tk.LabelFrame(self.master, text="Voltage (V)", bd=3, padx=10, pady=10, relief=tk.RIDGE)
-        self.cell_frame.grid(row=8, column=0, sticky='nsew')
+        self.cell_frame = tk.LabelFrame(self.fTable, text="Voltage (V)", bd=3, padx=10, pady=10, relief=tk.RIDGE)
+        self.cell_frame.grid(row=3, column=0, sticky='nsew')
         #Temp Frame
-        self.temp_frame = tk.LabelFrame(self.master, text="Temperature (C)", bd=3, padx=10, pady=10, relief=tk.RIDGE)
-        self.temp_frame.grid(row=8, column=1, sticky='nsew')
+        self.temp_frame = tk.LabelFrame(self.fTable, text="Temperature (C)", bd=3, padx=10, pady=10, relief=tk.RIDGE)
+        self.temp_frame.grid(row=3, column=1, sticky='nsew')
         #Cell SOC Frame
-        self.soc_frame = tk.LabelFrame(self.master, text="State of Charge(SOC) (%)", bd=3, padx=10, pady=10, relief=tk.RIDGE)
-        self.soc_frame.grid(row=8, column=2, sticky='nsew')
+        self.soc_frame = tk.LabelFrame(self.fTable, text="State of Charge(SOC) (%)", bd=3, padx=10, pady=10, relief=tk.RIDGE)
+        self.soc_frame.grid(row=3, column=2, sticky='nsew')
         #Pack Frame
-        self.pack_frame = tk.LabelFrame(self.master, bd=3, padx=10, pady=10, relief=tk.RIDGE)
-        self.pack_frame.grid(row=8, column=3, padx=20, columnspan=2, sticky='nsew', pady=10)
+        self.pack_frame = tk.LabelFrame(self.fTable, bd=3, padx=10, pady=10, relief=tk.RIDGE)
+        self.pack_frame.grid(row=3, column=3, padx=20, columnspan=2, sticky='nsew', pady=10)
         #Log Frame
-        self.log_frame = tk.LabelFrame(self.master, bd=3, padx=10, pady=10, relief=tk.RIDGE)
-        self.log_frame.grid(row=9, column=6, sticky='ew')
+        self.log_frame = tk.LabelFrame(self.fTable, bd=3, padx=10, pady=10, relief=tk.RIDGE)
+        self.log_frame.grid(row=4, column=6, sticky='ew')
         #Error Frame
-        self.error_frame =tk.LabelFrame(self.master, bd=3, padx=10, pady=10, relief=tk.RIDGE)
-        self.error_frame.grid(row=9, column=7, padx=11)
-
-        #Header Frame
-        self.header_frame = tk.LabelFrame(self.master, padx=10, pady=10)
-        self.header_frame.place(x = 0, rely = 0, relheight = 0.1, relwidth = 1)
+        self.error_frame =tk.LabelFrame(self.fTable, bd=3, padx=10, pady=10, relief=tk.RIDGE)
+        self.error_frame.grid(row=4, column=7, padx=11)
         #########################
 
         #Making equal size columns and adding weight and uniformity to them
         columns = []
         for i in range(7):
-            frame = tk.Frame(self.master)
+            frame = tk.Frame(self.fTable)
             columns.append(frame)
 
         self.master.grid_rowconfigure(0, weight=1)
         for column, f in enumerate(columns):
             f.grid(row=0, column=column, sticky="nsew")
-            self.master.grid_columnconfigure(column, weight=1, uniform="column")
+            self.fTable.grid_columnconfigure(column, weight=1, uniform="column")
+
         self.create_widgets()
             
-        # Flag to indicate if the serial connection is active
+        #Flag to indicate if the serial connection is active
         self.connection_active = False
         #Container for each cell connected to BMS along with information related to each cell
         self.cells_update = {}
@@ -82,21 +93,17 @@ class SerialMonitor:
          
     def create_widgets(self):
         ############# ALL LABELS AND SCROLLABLE TEXT ###################
-        #Port Label
-        ##self.port_combobox_label.grid(row=6, column=0, sticky='n', ipady=5)
+
         #This function inserts all ports into port combobox
         self.populate_ports()
 
-        #Baud Label
-        #self.baud_combobox_label = ttk.Label(self.master, text="Select Baud Rate:", font='Arial')
-        #self.baud_combobox_label.grid(row=6, column=1, sticky='n', ipady=5)
         #Cell data label
-        self.cell_data_label =ttk.Label(self.master, text="Cell Data", font=("Arial",16,'bold'), relief='solid', anchor='center')
-        self.cell_data_label.grid(row=7, column=0, ipadx=5, ipady=0, columnspan=3, sticky='nsew')
+        self.cell_data_label =ttk.Label(self.fTable, text="Cell Data", font=("Arial",16,'bold'), relief='solid', anchor='center')
+        self.cell_data_label.grid(row=2, column=0, ipadx=5, ipady=0, columnspan=3, sticky='nsew')
 
         #Pack data label
-        self.cell_data_label =ttk.Label(self.master, text="Pack Data", font=("Arial",16,'bold'), relief='solid', anchor='center')
-        self.cell_data_label.grid(row=7, column=3, ipadx=5, pady=0, columnspan=2, sticky='nsew')
+        self.cell_data_label =ttk.Label(self.fTable, text="Pack Data", font=("Arial",16,'bold'), relief='solid', anchor='center')
+        self.cell_data_label.grid(row=2, column=3, ipadx=5, pady=0, columnspan=2, sticky='nsew')
 
         ################## CELL LABELS AND TEXTFIELDS ########################
 
@@ -219,7 +226,6 @@ class SerialMonitor:
         #Vbus scrollable text
         self.vBus_textField = tk.Label(self.cell_frame, height=1, width=10)
         self.vBus_textField.pack()
-
         #############################
 
         ############### TEMPERATURE
@@ -354,17 +360,17 @@ class SerialMonitor:
         ###################### ALL COMBOBOXES AND BUTTONS ########################
 
         #Baud combobox
-        self.baud_combobox = ttk.Combobox(self.master, values=["2400","4800","9600","14400", "115200"], state="readonly")
+        self.baud_combobox = ttk.Combobox(self.fTable, values=["2400","4800","9600","14400", "115200"], state="readonly")
         self.baud_combobox.set("115200")
-        self.baud_combobox.grid(row=6, column=1, sticky='nsew')
+        self.baud_combobox.grid(row=1, column=1, sticky='nsew')
 
         #Connect button
-        self.connect_button = ttk.Button(self.master, text="Connect", command=self.connect)
-        self.connect_button.grid(row=6, column=2, sticky='nsew')
+        self.connect_button = ttk.Button(self.fTable, text="Connect", command=self.connect)
+        self.connect_button.grid(row=1, column=2, sticky='nsew')
 
         #Disconnect button
-        self.disconnect_button = ttk.Button(self.master, text="Disconnect", command=self.disconnect, state=tk.DISABLED)
-        self.disconnect_button.grid(row=6, column=3, sticky='nsew')
+        self.disconnect_button = ttk.Button(self.fTable, text="Disconnect", command=self.disconnect, state=tk.DISABLED)
+        self.disconnect_button.grid(row=1, column=3, sticky='nsew')
 
         #Set Log Time Button
         self.interval_label = tk.Label(self.log_frame, text="Logging Interval (s)")
@@ -376,19 +382,19 @@ class SerialMonitor:
         self.log_button.pack()
 
         #All export buttons
-        self.export_txt_button = ttk.Button(self.master, text="Export as TXT", command=self.export_txt, state=tk.DISABLED)
-        self.export_txt_button.grid(row=6, column=4, sticky='nsew', ipady=10)
+        self.export_txt_button = ttk.Button(self.fTable, text="Export as TXT", command=self.export_txt, state=tk.DISABLED)
+        self.export_txt_button.grid(row=1, column=4, sticky='nsew', ipady=10)
 
-        self.export_csv_button = ttk.Button(self.master, text="Export as CSV", command=self.export_csv, state=tk.DISABLED)
-        self.export_csv_button.grid(row=6, column=5, sticky='nsew', )
+        self.export_csv_button = ttk.Button(self.fTable, text="Export as CSV", command=self.export_csv, state=tk.DISABLED)
+        self.export_csv_button.grid(row=1, column=5, sticky='nsew', )
 
-        self.export_xml_button = ttk.Button(self.master, text="Export as XML", command=self.export_xml, state=tk.DISABLED)
-        self.export_xml_button.grid(row=6, column=6, sticky='nsew')
+        self.export_xml_button = ttk.Button(self.fTable, text="Export as XML", command=self.export_xml, state=tk.DISABLED)
+        self.export_xml_button.grid(row=1, column=6, sticky='nsew')
         #################################
 
         #Output BMS readouts into textfield
-        self.log_text = scrolledtext.ScrolledText(self.master, wrap=tk.WORD, width=80, height=20)
-        self.log_text.grid(row=8, column=5, columnspan=3, sticky='nsew', pady=12)
+        self.log_text = scrolledtext.ScrolledText(self.fTable, wrap=tk.WORD, width=80, height=20)
+        self.log_text.grid(row=3, column=5, columnspan=3, sticky='nsew', pady=12)
 
         #Error log Readout textfield and label
         self.errorLog_label = tk.Label(self.error_frame, height=1, width=10, text='Error Codes', font=('bold'))
@@ -397,26 +403,26 @@ class SerialMonitor:
         self.errorLog.pack()
 
         #Theme Combobox
-        self.theme_label = tk.Label(self.header_frame, text='Theme:', font=('Arial', 8, 'bold'))
-        self.theme_label.pack(anchor='ne', padx=5, ipadx=5)
-        self.theme_combobox = ttk.Combobox(self.header_frame, values=[value for value in self.window.theme_names()], state="readonly")
-        self.theme_combobox.pack(anchor="ne", after=self.theme_label, ipady=20, ipadx=3)
+        self.theme_label = tk.Label(self.fTable, text='Theme:', font=('Arial', 8, 'bold'))
+        self.theme_label.grid(row=0, column=7, sticky='e')
+        self.theme_combobox = ttk.Combobox(self.fTable, values=[value for value in self.window.theme_names()], state="readonly")
+        self.theme_combobox.grid(row=1, column=7, sticky='nsew')
         self.theme_combobox.bind('<<ComboboxSelected>>', self.theme_set)
 
         ################################# END OF WIDGETS ##################################
 
-    def theme_set(self, event):
-        self.window.theme_use(self.theme_combobox.get())
-            
+    def updateScrollRegion(self):
+        self.cTableContainer.update_idletasks()
+        self.cTableContainer.config(scrollregion=self.fTable.bbox())
 
     def theme_set(self, event):
         self.window.theme_use(self.theme_combobox.get())
             
     def populate_ports(self):
         ports = [port.device for port in serial.tools.list_ports.comports()]
-        self.port_combobox = ttk.Combobox(self.master, values=ports, state="readonly")
+        self.port_combobox = ttk.Combobox(self.fTable, values=ports, state="readonly")
         self.port_combobox.set('COM3')
-        self.port_combobox.grid(row=6, column=0, sticky='nsew')
+        self.port_combobox.grid(row=1, column=0, sticky='nsew')
 
     def connect(self):
         port = self.port_combobox.get()
@@ -460,14 +466,13 @@ class SerialMonitor:
                     lineCopy = lineCopy.split(' ')
                     if line:
                         self.populate_cells(lineCopy) #Passes each line into a function to check if the line contains desired information
-                        self.log_text.insert(tk.END, str(datetime.now()) + ': ' + line)
+                        self.log_text.insert(tk.END, str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')) + ': ' + line)
                         self.log_text.see(tk.END)
                 except Exception as e:
                     if self.connection_active:  # Only log errors if the connection is still active
                         self.log_text.insert(tk.END, f"Error reading from port: {str(e)}\n")
                         continue
-                        continue
-                    break
+                    #break
 
     def set_deltaT(self):
             try:
@@ -478,10 +483,8 @@ class SerialMonitor:
             except Exception as e:
                 self.log_text.insert(tk.END, f"Value must be an integer: {str(e)}\n")
                 self.log_text.see(tk.END)
-        
 
     def populate_cells(self, line: list):
-        self.cells_update['Timestamp'] = datetime.now().strftime("%m-%d-%y-%H:%M:%S")
         self.cells_update['Timestamp'] = datetime.now().strftime("%m-%d-%y-%H:%M:%S")
 
         if (("cell" in line) and ("volt" in line) and (not "dev" in line) and (not "pack" in line)):
@@ -630,23 +633,28 @@ class SerialMonitor:
             self.parse_data.append("\n")
             self.t_ref = time.time()
 
-    def plot(self):
-        navFrame = tk.LabelFrame(self.master, bd=3, padx=10, pady=10)
-        fig = Figure(figsize = (8, 3), dpi = 100)
+    def plot_animate(self):
+        navFrame = tk.LabelFrame(self.fTable, bd=3, padx=10, pady=10)
+        navFrame.pack_propagate(False)
         plot1 = fig.add_subplot(111)
-        canvas = FigureCanvasTkAgg(fig, master = self.master)
+        canvas = FigureCanvasTkAgg(fig, master = self.fTable)
         canvas.draw()
-        canvas.get_tk_widget().grid(row=9,column=1, columnspan=4, pady=10, sticky='ns', padx=20)
+        canvas.get_tk_widget().grid(row=4,column=2, columnspan=4, pady=10, sticky='ns', padx=20)
         toolbar = NavigationToolbar2Tk(canvas, navFrame)
         toolbar.update()
-        navFrame.grid(row=9,column=0, sticky='nsew', pady=10)
-    
+        navFrame.grid(row=4,column=0, sticky='nsew', pady=10, columnspan=2)
 
-    def animate_plot(self, i):
-        xList = [value for value in self.csv_header if isinstance(value, datetime.date)]
-        yList = [int(value) for value in self.cells.values() if 'cell' in value]
-        a.clear()
-        a.plot(xList, yList)
+        xar = []
+        yar = []
+        self.plot_data = self.parse_data
+        for data in self.plot_data:
+            if isinstance(data, datetime):
+                xar.append(data)
+            elif isinstance(data, int):
+                yar.append(data)
+                
+        plot1.clear()
+        plot1.plot(xar,yar)
 
     def export_txt(self):
         data = self.log_text.get(1.0, tk.END)
@@ -678,5 +686,6 @@ class SerialMonitor:
 if __name__ == "__main__":
     root = tk.Tk()
     app = SerialMonitor(root)
-    app.plot()
+    app.plot_animate()
+    app.updateScrollRegion()
     root.mainloop()
