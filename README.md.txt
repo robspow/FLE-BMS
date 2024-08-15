@@ -1,7 +1,12 @@
-# hello-world
-Hello World repository for Git tutorial
-This is an example repository for the Git tutoial on https://www.w3schools.com
+This application will fail to work properly without the following,
+PACKAGE REQUIREMENTS:
+tkbootstrap
+pyserial
+matplotlib
 
-This repository is built step by step in the tutorial.
+To install the packages in your CMD do,
+pip install <package name>
+e.g, "pip install tkbootstrap"
+     "pip install pyserial"
+     "pip install matplotlib"
 
-V2 -- Test edit
